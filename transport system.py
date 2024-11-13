@@ -20,11 +20,13 @@ class FlightBookingSystem(ABC):
 
 # Flight class
 class Flight:
-    def __init__(self, flight_number, departure, destination, date, seats):
+    def __init__(self, flight_number, departure, destination, date, takeOff_time, landing_time, seats):
         self.flight_number = flight_number
         self.departure = departure
         self.destination = destination
         self.date = date
+        self.takeOff_time = takeOff_time
+        self.landing_time = landing_time
         self.seats = seats
 
     def __str__(self):
@@ -76,26 +78,26 @@ class User(FlightBookingSystem):
 # Input validation functions
 def validate_name(name):
     if not re.match("^[A-Za-z ]+$", name):
-        print("Error: Name can only contain alphabets and spaces. Please enter a valid name.")
+        print("Error: Please enter a valid name.")
         return False
     return True
 
 def validate_email(email):
     if "@" not in email or "." not in email:
-        print("Error: Please enter a valid email with '@' and '.'")
+        print("Error: Please enter a valid email.")
+        return False
+    return True
+
+def validate_gender(gender):
+    if gender.lower() not in ['m', 'f']:
+        print("Error: Please enter the correct gender.")
         return False
     return True
 
 def validate_password(password):
     correct_password = "Flight:08"
     if password != correct_password:
-        print("Error: Incorrect password. Please try again.")
-        return False
-    return True
-
-def validate_gender(gender):
-    if gender.lower() not in ['male', 'female']:
-        print("Error: Gender must be 'male' or 'female'. Please enter a valid gender.")
+        print("Incorrect password. Please try again.")
         return False
     return True
 
@@ -106,9 +108,9 @@ def choose_payment_plan():
     print("3. MOMO Pay")
     print("4. Airtel Money Pay")
     print("5. Bitcoin")
-    choice = input("Select a payment option (1, 2, 3, 4, 5): ")
+    choice = input("We are almost done! Select a payment option:")
     if choice not in ['1', '2', '3', '4', '5']:
-        print("Invalid option. Please choose a valid payment method.")
+        print("Invalid option.")
         return choose_payment_plan()
     return choice
 
@@ -135,6 +137,24 @@ def main():
     email = input("Enter your email: ")
     while not validate_email(email):
         email = input("Enter your email: ")
+        
+    # Gender and title input
+    gender = input("Enter your gender (Enter either m/f): ").strip().lower()
+    while not validate_gender(gender):
+        gender = input("Enter your gender (Enter either m/f): ").strip().lower()
+
+    marital_status = None
+    if gender == 'f':
+        marital_status = input("Are you married or not? (yes/no): ").strip().lower()
+        if marital_status == "yes":
+            print(f"You are welcome to the Air Uganda airline official reservation system, Mrs. {name}!!")
+        elif marital_status == "no":
+            print(f"You are welcome to the Air Uganda airline official reservation system, Miss {name}!!")
+        else:
+            print("Your input was invalid. You may try again.")
+            return
+    elif gender == 'm':
+        print(f"You are welcome to the Air Uganda official reservation system, Mr. {name}!!")
 
     # Password input (hidden and validation)
     while True:
@@ -142,30 +162,10 @@ def main():
         if validate_password(password):
             break
 
-    # Gender and title input
-    gender = input("Please specify your gender (male/female): ").strip().lower()
-    while not validate_gender(gender):
-        gender = input("Please specify your gender (male/female): ").strip().lower()
-
-    marital_status = None
-    title = ""
-    if gender == "female":
-        marital_status = input("Are you married or unmarried? (married/unmarried): ").strip().lower()
-        if marital_status == "married":
-            title = "Mrs."
-        elif marital_status == "unmarried":
-            title = "Miss"
-        else:
-            print("Invalid marital status. Please enter 'married' or 'unmarried'.")
-            return
-    elif gender == "male":
-        title = "Mr."
-
+    # Now create the User object after password is validated
     user = User(name, email, password, gender, marital_status)
 
-    # Append the title to the user's name
-    user.name = f"{title} {user.name}"
-
+    # Booking process
     while True:
         print("\nAvailable Flights:")
         for idx, flight in enumerate(flights, 1):
